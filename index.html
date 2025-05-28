@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>VERY PERFECT </title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <title>Tenancy Cost Calculator</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: auto;
+      background-color: #111;
+      color: #f0f0f0;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+
+    select,
+    input {
+      width: 100%;
+      padding: 5px;
+      margin-top: 5px;
+      background-color: #222;
+      color: #f0f0f0;
+      border: 1px solid #444;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 15px 25px;
+      font-weight: bold;
+      background-color: #333;
+      color: #fff;
+      border: 1px solid #555;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-size: 1.1em;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #444;
+    }
+
+    #output {
+      background: #1a1a1a;
+      padding: 20px;
+      white-space: pre-wrap;
+      border: 1px solid #333;
+      margin-top: 20px;
+      color: #ffd700;
+      border-radius: 4px;
+    }
+
+    b {
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 20px;
+      border-radius: 8px;
+      background-color: #1e1e1e;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #ffd700;
+      border-bottom: 2px solid #333;
+      padding-bottom: 15px;
+    }
+
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 0.85em;
+      color: #888;
+      line-height: 1.5;
+    }
+
+    .section-title {
+      margin-top: 25px;
+      margin-bottom: 10px;
+      color: #ffd700;
+      border-bottom: 1px solid #333;
+      padding-bottom: 5px;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    .input-group label {
+      margin-bottom: 5px;
+    }
+
+    .note {
+      font-size: 0.85em;
+      color: #aaa;
+      font-style: italic;
+      margin-top: 3px;
+    }
+
+    .error {
+      color: #ff5555;
+      margin-top: 5px;
+      font-weight: bold;
+    }
+
+    .required:after {
+      content: " *";
+      color: #ff5555;
+    }
+
+    i.deductable {
+      font-style: italic;
+      color: #aaa;
+    }
+
+    .highlight {
+      background-color: #333;
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div id="app">
+
+    <div class="container">
+
+      <div class="header">
+
+        <h2>Tenancy Cost Calculator (2025 Schedule)</h2>
+
+      </div>
+
+      <div class="input-group">
+
+        <label class="required">Monthly Rental (RM):</label>
+
+        <input ref="rentalInput" v-model.number="rental" type="number" min="0" placeholder="Enter monthly rent" required>
+
+        <div v-if="rentalError" class="error">{{ rentalError }}</div>
+
+        <div v-else class="note">Required field</div>
+
+      </div>
+
+      <div class="input-group">
+
+        <label>Tenancy Period (Years):</label>
+
+        <select v-model.number="tenure" @change="renewal = tenure">
+
+          <option v-for="year in tenureOptions" :value="year">{{ year }}</option>
+
+        </select>
+
+      </div>
+
+      <div class="input-group">
+
+        <label>Option To Renew (Years):</label>
+
+        <select v-model.number="renewal">
+
+          <option v-for="year in renewalOptions" :value="year">{{ year }}</option>
+
+        </select>
+
+        <div class="note">Defaults to same as Tenancy Period</div>
+
+      </div>
+
+      <div class="input-group">
+
+        <label>Security Deposit (Months):</label>
+
+        <select v-model.number="security">
+
+          <option v-for="month in securityOptions" :value="month">{{ month }}</option>
+
+        </select>
+
+        <div class="note">Typically 2 months</div>
+
+      </div>
+
+      <div class="input-group">
+
+        <label>Utility Deposit (Months):</label>
+
+        <select v-model.number="utility">
+
+          <option v-for="month in utilityOptions" :value="month">{{ month }}</option>
+
+        </select>
+
+        <div class="note">Typically 0.5 months</div>
+
+      </div>
+
+      <div class="input-group">
+
+        <label>Access Cards Quantity:</label>
+
+        <input v-model.number="cards" type="number" min="0" placeholder="Number of access cards">
+
+      </div>
+
+      <div class="input-group">
+
+        <label>Access Card Value per Unit (RM):</label>
+
+        <input v-model.number="cardValue" type="number" min="0" placeholder="Value per card">
+
+      </div>
+
+      <div class="input-group">
+
+        <label>Other Advance Payments - Description:</label>
+
+        <input v-model="otherItem" type="text" placeholder="e.g. Maintenance Fee">
+
+      </div>
+
+      <div class="input-group">
+
+        <label>Other Advance Payments - Amount (RM):</label>
+
+        <input v-model.number="otherValue" type="number" min="0" placeholder="Additional amount">
+
+      </div>
+
+      <button @click="generate">Calculate Tenancy Costs</button>
+
+      <div v-if="output" class="section-title">Cost Breakdown</div>
+
+      <div id="output" v-html="output"></div>
+
+      <div v-if="error" class="error">{{ error }}</div>
+
+      <div class="footer">
+
+        <p><b>By KS CHEN (REN 74181) – Reapfield</b></p>
+
+        <p class="highlight">This calculator is in Beta testing stage. If you find any inaccuracies, please contact us at +6 014-636 8436. Happy closing!</p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        rental: null,
+        tenure: 1,
+        renewal: 1,
+        security: 2,
+        utility: 0.5,
+        cards: 2,
+        cardValue: 100,
+        otherItem: '',
+        otherValue: 0,
+        output: '',
+        error: '',
+        rentalError: '',
+        tenureOptions: Array.from({
+          length: 20
+        }, (_, i) => i + 1),
+        renewalOptions: Array.from({
+          length: 20
+        }, (_, i) => i),
+        securityOptions: Array.from({
+          length: 30
+        }, (_, i) => i + 1),
+        utilityOptions: Array.from({
+          length: 30
+        }, (_, i) => (i + 1) * 0.5)
+      },
+      methods: {
+        formatRM(value) {
+          return "<b>RM " + value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "</b>";
+        },
+        calculateStamping(rent, tenure) {
+          const annualRent = rent * 12;
+          const units = Math.ceil(annualRent / 250);
+          // Calculate stamping based on tenure bands
+          if (tenure === 1) {
+            // 1 year: RM1 per unit + RM10
+            return units * 1 + 10;
+          } else if (tenure === 2 || tenure === 3) {
+            // 2-3 years: RM3 per unit + RM10
+            return units * 3 + 10;
+          } else if (tenure === 4 || tenure === 5) {
+            // 4-5 years: RM5 per unit + RM10
+            return units * 5 + 10;
+          } else {
+            // 6+ years: RM7 per unit + RM10
+            return units * 7 + 10;
+          }
+        },
+        calculateAdmin(rent) {
+          // Admin fee tiers based on monthly rent
+          if (rent < 2000) return 300;
+          if (rent < 3500) return 400;
+          if (rent < 5000) return 500;
+          return 600;
+        },
+        validateInputs() {
+          this.rentalError = '';
+          this.error = '';
+          if (this.rental === null || this.rental <= 0) {
+            this.rentalError = 'Please enter a valid monthly rental amount';
+            this.$refs.rentalInput.focus();
+            return false;
+          }
+          return true;
+        },
+        generate() {
+          if (!this.validateInputs()) return;
+          try {
+            const rent = this.rental;
+            const tenure = this.tenure;
+            const renewal = this.renewal;
+            const securityMonths = this.security;
+            const utilityMonths = this.utility;
+            const cards = this.cards;
+            const cardValue = this.cardValue;
+            const otherItem = this.otherItem;
+            const otherValue = this.otherValue > 0 ? this.otherValue : 0;
+            // Calculate fees using new schedule
+            const stamping = this.calculateStamping(rent, tenure);
+            const admin = this.calculateAdmin(rent);
+            const totalBooking = rent + stamping + admin;
+            const earnest = rent;
+            const security = rent * securityMonths;
+            const utility = rent * utilityMonths;
+            const access = cardValue * cards;
+            const totalMoveIn = security + utility + access + otherValue;
+            // Format tenure display with renewal option
+            let tenancyLabel = `<b>${tenure} Year${tenure > 1 ? 's' : ''}</b>`;
+            if (renewal > 0) {
+              tenancyLabel += ` + Option To Renew ${renewal} Year${renewal > 1 ? 's' : ''}`;
+            }
+            // Format other advance payments
+            let otherPayment = '';
+            if (otherItem && otherValue > 0) {
+              otherPayment = `4. - ${otherItem} <i class="deductable">(Deductable)</i>: ${this.formatRM(otherValue)}`;
+            }
+            this.output = `
+
+<b>AGREEMENT TO RENT / FOR BOOKING</b>
+
+1. Earnest Deposit/Advance Rental/Booking Deposit: ${this.formatRM(earnest)} <i>(1 Month advance Rental)</i>
+
+2. Stamping & Service Charges: ${this.formatRM(stamping)} + ${this.formatRM(admin)} = ${this.formatRM(stamping + admin)}
+
+<b>Total: ${this.formatRM(totalBooking)}</b>
+
+Tenancy Period: ${tenancyLabel}
+
+———————————————————————————————
+
+<b>UPON OR BEFORE SIGNING OF TENANCY AGREEMENT & HANDOVER/MOVING-IN (Refundable Deposits)</b>
+
+1. Security Deposit: ${this.formatRM(security)} <i>(${securityMonths} Months Rent)</i>
+
+2. Utility Deposit: ${this.formatRM(utility)} <i>(${utilityMonths} Months Rent)</i>
+
+3. Access Card Deposit: RM ${cardValue.toFixed(2)} x${cards} = ${this.formatRM(access)}
+
+${otherPayment}
+
+<b>Total: ${this.formatRM(totalMoveIn)}</b>`;
+          } catch (e) {
+            this.error = 'Error in calculation: ' + e.message;
+          }
+        }
+      },
+      mounted() {
+        // Initialize renewal to match tenure
+        this.renewal = this.tenure;
+      }
+    });
+  </script>
+
+</body>
+
+</html>
+<!-- partial -->
+  
+</body>
+</html>
